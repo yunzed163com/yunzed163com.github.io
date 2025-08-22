@@ -85,6 +85,8 @@ header {
     height: 32px;
     background-color: #e0e0e0;
     border-radius: 50%;
+    object-fit: cover;
+    border:2px solid #fff;
 }
 
 /* 主内容区 */
@@ -293,6 +295,7 @@ main {
     background-color: white;
     border: 1px solid #e5e7eb;
     margin-right: 0.75rem;
+    object-fit: cover;
     position: relative;
     z-index: 3;
 }
@@ -512,7 +515,7 @@ main {
     <header>
         <button id="toggle-sidebar">☰</button>
         <div class="logo">三教会</div>
-        <div class="user-avatar"></div>
+        <img class="user-avatar" src="picture/logo-sanjiaohui.jpg">
     </header>
 
     <!-- 主内容区 -->
@@ -574,7 +577,7 @@ main {
         <div id="sidebar-overlay"></div>
 
         <!-- 中间展示区 -->
-        <div class="content-area" style="background-image: url('https://mms0.baidu.com/it/u=4218418783,633891598&amp;fm=253&amp;app=120&amp;f=JPEG?w=889&amp;h=500');">
+        <div class="content-area" style="background-image: url('picture/background_xl.jpg');">
             <div class="content-container">
                 <!-- 内容1 -->
                 <div id="content1" class="content-section">
@@ -611,7 +614,7 @@ main {
                                             <td>管理员</td>
                                             <td>三之意志速度者</td>
                                             <td>
-                                                <span class="position-badge">管理员</span>
+                                                <span class="position-badge">萨姆</span>
                                             </td>
                                         </tr>
                                         <tr>
@@ -752,7 +755,7 @@ main {
                   <h3>6's favr</h3>
                   <div class="image-display-block">
                           <!-- 图片标签，替换src为实际图片URL -->
-                          <img src="https://i2.hdslb.com/bfs/archive/1c36e26a18aa487225fa1af809db98efe3956baf.jpg" alt="蒋仁熙的最爱" class="display-image">
+                          <img src="picture/HuTao.jpg" alt="蒋仁熙的最爱" class="display-image">
                       </div>
                   
                 </div>
@@ -855,7 +858,7 @@ main {
                                     <tr>
                                         <td>
                                             <div class="product-info">
-                                                <div class="product-placeholder"></div>
+                                                <img class="product-placeholder" src="picture/ywt.jpg">
                                                 <span>袁文涛</span>
                                             </div>
                                         </td>
