@@ -1,0 +1,956 @@
+<html lang="zh-CN"><head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>三教会</title>
+    <style>
+        /* 基础样式重置 */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Arial', sans-serif;
+}
+
+:root {
+    /* 定义基础变量，便于统一调整 */
+    --sidebar-width: 256px;
+    --header-height: 64px;
+    --spacing-sm: 0.5rem;
+    --spacing-md: 1rem;
+    --spacing-lg: 1.5rem;
+    --spacing-xl: 2rem;
+    --border-radius: 8px;
+}
+
+body {
+    background-color: #f0f0f0;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow-x: hidden;
+}
+
+
+.page-footer {
+    position: fixed; /* 固定定位，不受页面滚动影响 */
+    bottom: 0; /* 距离底部0距离 */
+    left: 0;
+    right: 0; /* 左右拉伸至全屏 */
+    padding: 0.5rem 0.5rem;
+
+    text-align: center; /* 文字居中 */
+    font-size: 80%;
+    color: #666;
+    z-index: 100; /* 确保在其他内容之上 */
+}
+
+/* 给内容区添加底部 padding，避免被footer遮挡 */
+.content-area {
+    padding-bottom: 50px; /* 值大于footer高度即可 */
+}
+
+
+/* 顶部导航 */
+header {
+    background-color: white;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+    height: var(--header-height);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 var(--spacing-md);
+    z-index: 10;
+}
+
+#toggle-sidebar {
+    display: none;
+    padding: 8px;
+    border-radius: 4px;
+    border: none;
+    background: none;
+    cursor: pointer;
+}
+
+#toggle-sidebar:hover {
+    background-color: #f0f0f0;
+}
+
+.logo {
+    font-size: clamp(1.2rem, 3vw, 1.5rem);
+    font-weight: bold;
+}
+
+.user-avatar {
+    width: 32px;
+    height: 32px;
+    background-color: #e0e0e0;
+    border-radius: 50%;
+}
+
+/* 主内容区 */
+main {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
+}
+
+/* 侧边栏 */
+#sidebar {
+    width: var(--sidebar-width);
+    background-color: white;
+    box-shadow: 2px 0 4px rgba(0,0,0,0.2);
+    height: calc(100vh - var(--header-height));
+    position: fixed;
+    left: 0;
+    top: var(--header-height);
+    transform: translateX(-100%);
+    transition: transform 0.3s ease;
+    z-index: 20;
+    overflow-y: auto;
+}
+
+#sidebar.open {
+    transform: translateX(0);
+}
+
+.nav-group {
+    margin-bottom: var(--spacing-xl);
+}
+
+.nav-group-title {
+    padding: var(--spacing-sm) var(--spacing-md);
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #666;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.nav-links {
+    list-style: none;
+}
+
+.nav-links li a {
+    display: flex;
+    align-items: center;
+    padding: 12px var(--spacing-md);
+    color: #333;
+    text-decoration: none;
+    transition: background-color 0.2s;
+}
+
+.nav-links li a:hover {
+    background-color: #f5f5f5;
+}
+
+.nav-links li a.active {
+    background-color: rgba(59, 130, 246, 0.1);
+    color: #3b82f6;
+    font-weight: 500;
+}
+
+/* 遮罩层 */
+#sidebar-overlay {
+    position: fixed;
+    inset: 0;
+    background-color: rgba(0,0,0,0.5);
+    z-index: 15;
+    display: none;
+}
+
+#sidebar-overlay.show {
+    display: block;
+}
+
+/* 中间展示区 */
+.content-area {
+    flex: 1;
+    overflow: auto;
+    padding: var(--spacing-lg);
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    position: relative;
+    margin-left: 0;
+    transition: margin-left 0.3s ease;
+    z-index: 1;
+}
+
+.content-area::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(255, 255, 255, 0.1);
+    z-index: 0;
+}
+
+.content-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    position: relative;
+    z-index: 1;
+}
+
+.content-section {
+    background-color: rgba(255, 255, 255, 0.5);
+    border-radius: var(--border-radius);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    padding: var(--spacing-lg);
+    min-height: calc(100vh - var(--header-height) * 2);
+    display: none;
+}
+
+.content-section.active {
+    display: block;
+}
+
+.content-section h2 {
+    font-size: clamp(1.2rem, 3vw, 1.5rem);
+    margin-bottom: var(--spacing-md);
+    color: #333;
+}
+
+.content-section h3 {
+    font-size: clamp(1.1rem, 2.5vw, 1.3rem);
+    margin-bottom: var(--spacing-md);
+}
+
+.content-section p {
+    color: #666;
+    line-height: 1.6;
+    margin-bottom: var(--spacing-md);
+}
+
+/* 商品表格样式 */
+.contact-table-container {
+    background-color: #ffffffb3;
+    border-radius: 0.75rem;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+    padding: 1.25rem;
+    position: relative;
+    z-index: 3;
+}
+
+.table-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+    position: relative;
+    z-index: 3;
+}
+
+.table-title {
+    font-weight: 600;
+}
+
+.table-wrapper {
+    overflow-x: auto;
+}
+
+.data-table {
+    width: 100%;
+    min-width: 640px;
+    position: relative;
+    z-index: 3;
+}
+
+.data-table th {
+    text-align: left;
+    padding: 0.75rem 1rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #86909C;
+    border-bottom: 1px solid #e5e7eb;
+    position: relative;
+    z-index: 3;
+}
+
+.data-table td {
+    padding: 0.75rem 1rem;
+    font-size: 0.875rem;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.data-table tr:hover {
+    background-color: #f9fafb80;
+    position: relative;
+    z-index: 3;
+}
+
+.product-info {
+    display: flex;
+    align-items: center;
+}
+
+.product-placeholder {
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 50%;
+    background-color: white;
+    border: 1px solid #e5e7eb;
+    margin-right: 0.75rem;
+    position: relative;
+    z-index: 3;
+}
+
+.status-badge {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.75rem;
+    border-radius: 9999px;
+    background-color: #dcfce7;
+    color: #166534;
+}
+
+/* 教会高层部分专用样式 */
+.person-name-badge {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.75rem;
+    border-radius: 1px;
+    background-color: #d3c3ff;
+    color: #794aff;
+    position: relative;
+    z-index: 3;
+}
+
+.person-name-badge-public {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.75rem;
+    border-radius: 1px;
+    background-color: #dbeafe;
+    color: #1e40af;
+    position: relative;
+    z-index: 3;
+}
+
+.position-badge {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.75rem;
+    border-radius: 9999px;
+    background-color: #dbeafe;
+    color: #1e40af;
+    position: relative;
+    z-index: 3;
+}
+
+.position-badge-high {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.75rem;
+    border-radius: 9999px;
+    background-color: #ffe8ce;
+    color: #ffa33e;
+    position: relative;
+    z-index: 3;
+}
+
+.position-badge-public {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.75rem;
+    border-radius: 9999px;
+    background-color: #eaffe4;
+    color: #387927;
+    position: relative;
+    z-index: 3;
+}
+
+/* 统计卡片样式 */
+.stats-card {
+    background-color: #f6f3ff80;
+    border-radius: 0.75rem;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.3);
+    padding: var(--spacing-lg);
+    margin-bottom: var(--spacing-lg);
+    text-align: center;
+    position: relative;
+    z-index: 3;
+}
+
+.stats-label {
+    font-size: 0.875rem;
+    color: #666;
+    margin-bottom: 0.25rem;
+}
+
+.stats-value {
+    font-size: clamp(1.2rem, 4vw, 1.5rem);
+    font-weight: 600;
+    color: #333;
+}
+
+/* 日期卡片样式 */
+.date-card {
+    background-color: #f6f3ff80;
+    border-radius: 0.75rem;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.25);
+    padding: 1.25rem;
+    margin-bottom: var(--spacing-lg);
+    text-align: center;
+    position: relative;
+    z-index: 3;
+}
+
+.date-label {
+    font-size: 0.875rem;
+    color: #666;
+    margin-bottom: 0.5rem;
+}
+
+.date-value {
+    font-size: clamp(1.5rem, 5vw, 1.8rem);
+    font-weight: 600;
+    color: #333;
+}
+
+.date-weekday {
+    font-size: 1rem;
+    color: #666;
+    margin-top: 0.5rem;
+}
+
+/* 访问卡片样式 */
+.visit-card {
+    background-color: #f6f3ff80;
+    border-radius: 0.75rem;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.25);
+    padding: 1.25rem;
+    margin-bottom: var(--spacing-lg);
+    text-align: center;
+    position: relative;
+    z-index: 3;
+}
+
+.visit-label {
+    font-size: 0.875rem;
+    color: #9742ff;
+    margin-bottom: 0.5rem;
+}
+
+/* 图片展示样式 */
+.image-display-block {
+    background-color: white;
+    border-radius: 0.75rem;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+    padding: 5%;
+    margin: 2rem 0;
+}
+
+.display-image {
+    width: 100%;
+    max-width: 860px;
+    height: auto;
+    border-radius: 0.5rem;
+    object-fit: cover;
+    margin: 0 auto;
+    display: block;
+}
+
+/* 响应式调整 - 增加更多断点 */
+@media (min-width: 1024px) {
+    #toggle-sidebar {
+        display: none;
+    }
+
+    #sidebar {
+        transform: translateX(0);
+        position: relative;
+        top: 0;
+    }
+
+    .content-area {
+        margin-left: var(--sidebar-width);
+    }
+}
+
+@media (max-width: 1023px) {
+    #toggle-sidebar {
+        display: block;
+    }
+    
+    .content-section {
+        padding: var(--spacing-md);
+    }
+}
+
+@media (max-width: 768px) {
+    :root {
+        --spacing-sm: 0.4rem;
+        --spacing-md: 0.8rem;
+        --spacing-lg: 1.2rem;
+        --spacing-xl: 1.6rem;
+    }
+    
+    .content-area {
+        padding: var(--spacing-md);
+    }
+    
+    .image-display-block {
+        padding: 3%;
+    }
+}
+
+@media (max-width: 480px) {
+    :root {
+        --spacing-sm: 0.3rem;
+        --spacing-md: 0.6rem;
+        --spacing-lg: 1rem;
+        --spacing-xl: 1.4rem;
+    }
+    
+    .data-table th,
+    .data-table td {
+        padding: 0.5rem 0.75rem;
+        font-size: 0.8rem;
+    }
+}
+    </style>
+</head>
+<body>
+    <!-- 顶部导航 -->
+    <header>
+        <button id="toggle-sidebar">☰</button>
+        <div class="logo">三教会</div>
+        <div class="user-avatar"></div>
+    </header>
+
+    <!-- 主内容区 -->
+    <main>
+        <!-- 侧边栏 -->
+        <aside id="sidebar">
+            <nav>
+                <!-- 主要内容 -->
+                <div class="nav-group">
+                    <p class="nav-group-title">主要内容</p>
+                    <ul class="nav-links">
+                        <li>
+                            <a href="#content1" class="nav-link" data-target="content1">教会高层</a>
+                        </li>
+                        <li>
+                            <a href="#content2" class="nav-link" data-target="content2">基层群众</a>
+                        </li>
+                        <li>
+                            <a href="#content3" class="nav-link" data-target="content3">群主私藏</a>
+                        </li>
+                    </ul>
+                </div>
+                
+                <!-- 系统功能 -->
+                <div class="nav-group">
+                    <p class="nav-group-title">系统功能</p>
+                    <ul class="nav-links">
+                        <li>
+                            <a href="#dashboard" class="nav-link active" data-target="dashboard">仪表盘</a>
+                        </li>
+                        <li>
+                            <a href="#settings" class="nav-link" data-target="settings">系统设置</a>
+                        </li>
+                        <li>
+                            <a href="#notifications" class="nav-link" data-target="notifications">通知中心</a>
+                        </li>
+                    </ul>
+                </div>
+                
+                <!-- 帮助与支持 -->
+                <div class="nav-group">
+                    <p class="nav-group-title">帮助与支持</p>
+                    <ul class="nav-links">
+                        <li>
+                            <a href="#help" class="nav-link" data-target="help">帮助中心</a>
+                        </li>
+                        <li>
+                            <a href="#about" class="nav-link" data-target="about">关于我们</a>
+                        </li>
+                        <li>
+                            <a href="#contact" class="nav-link" data-target="contact">联系群主</a>
+                        </li>
+                    </ul>
+                </div>
+            </nav>
+        </aside>
+
+        <!-- 遮罩层 -->
+        <div id="sidebar-overlay"></div>
+
+        <!-- 中间展示区 -->
+        <div class="content-area" style="background-image: url('https://mms0.baidu.com/it/u=4218418783,633891598&amp;fm=253&amp;app=120&amp;f=JPEG?w=889&amp;h=500');">
+            <div class="content-container">
+                <!-- 内容1 -->
+                <div id="content1" class="content-section">
+                    <h2>教会高层</h2>
+                    <div class="table-container">
+                            <div class="table-header">
+                                <h3 class="table-title">教会高层成员</h3>
+                            </div>
+                            <div class="table-wrapper">
+                                <table class="data-table">
+                                    <thead>
+                                        <tr>
+                                            <th>名字</th>
+                                            <th>职务</th>
+                                            <th>职称</th>
+                                            <th>身份</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>
+                                              <span class="person-name-badge">JRX</span>
+                                            </td>
+                                            <td>群主</td>
+                                            <td>6</td>
+                                            <td>
+                                                <span class="position-badge-high">群主</span>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                <span class="person-name-badge">SEC</span>
+                                            </td>
+                                            <td>管理员</td>
+                                            <td>三之意志速度者</td>
+                                            <td>
+                                                <span class="position-badge">管理员</span>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                <span class="person-name-badge">XLT</span>
+                                            </td>
+                                            <td>管理员</td>
+                                            <td>三之意志继承者</td>
+                                            <td>
+                                                <span class="position-badge">花导</span>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                <span class="person-name-badge">DRZ</span>
+                                            </td>
+                                            <td>管理员</td>
+                                            <td>三之意志守护者</td>
+                                            <td>
+                                                <span class="position-badge">三</span>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                <span class="person-name-badge">YYZ</span>
+                                            </td>
+                                            <td>管理员</td>
+                                            <td>三之意志开拓者</td>
+                                            <td>
+                                                <span class="position-badge">银狼</span>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                <span class="person-name-badge">YKC</span>
+                                            </td>
+                                            <td>管理员</td>
+                                            <td>三之意志坚守者</td>
+                                            <td>
+                                                <span class="position-badge">翠花</span>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                <span class="person-name-badge">TXH</span>
+                                            </td>
+                                            <td>管理员</td>
+                                            <td>三之意志发扬者</td>
+                                            <td>
+                                                <span class="position-badge">管理</span>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                <span class="person-name-badge">ZMH</span>
+                                            </td>
+                                            <td>管理员</td>
+                                            <td>三之意志发扬者</td>
+                                            <td>
+                                                <span class="position-badge">管理</span>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                <span class="person-name-badge">请输入文本</span>
+                                            </td>
+                                            <td>管理员</td>
+                                            <td>三之意志发扬者</td>
+                                            <td>
+                                                <span class="position-badge">管理</span>
+                                            </td>
+                                        </tr>
+                                      
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+              
+                </div>
+                
+                <!-- 内容2 -->
+                <div id="content2" class="content-section">
+                    <h2>基层群众</h2>
+                    <div class="table-container">
+                            <div class="table-header">
+                                <h3 class="table-title">教会普通成员</h3>
+                            </div>
+                            <div class="table-wrapper">
+                                <table class="data-table">
+                                    <thead>
+                                        <tr>
+                                            <th>名字</th>
+                                            <th>职务</th>
+                                            <th>职称</th>
+                                            <th>身份</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>
+                                              <span class="person-name-badge">YWT</span>
+                                            </td>
+                                            <td>群众</td>
+                                            <td>ywt</td>
+                                            <td>
+                                                <span class="position-badge-public">希腊</span>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                              <span class="person-name-badge-public">BHR</span>
+                                            </td>
+                                            <td>群众</td>
+                                            <td>三之意志发扬者</td>
+                                            <td>
+                                                <span class="position-badge-public">群众</span>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                              <span class="person-name-badge-public">请输入文本2</span>
+                                            </td>
+                                            <td>群众</td>
+                                            <td>三之意志发扬者</td>
+                                            <td>
+                                                <span class="position-badge-public">群众</span>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                </div>
+                
+                <!-- 内容3 -->
+                <div id="content3" class="content-section">
+                  <h3>6's favr</h3>
+                  <div class="image-display-block">
+                          <!-- 图片标签，替换src为实际图片URL -->
+                          <img src="https://i2.hdslb.com/bfs/archive/1c36e26a18aa487225fa1af809db98efe3956baf.jpg" alt="蒋仁熙的最爱" class="display-image">
+                      </div>
+                  
+                </div>
+                
+                <!-- 仪表盘 -->
+                <div id="dashboard" class="content-section active">
+                    <h2>仪表盘</h2>
+                  
+                  <!-- 新增日期显示块 -->
+                    <div class="date-card">
+                        <div class="date-label">今天</div>
+                        <div class="date-value" id="current-date"></div>
+                        <div class="date-weekday" id="current-weekday"></div>
+                    </div>
+                  
+                    <div class="stats-card">
+                        <div class="stats-label">教会人数</div>
+                        <div class="stats-value">19</div>
+                    </div>
+
+                    <div class="visit-card">
+                      <a href="https://sr.mihoyo.com/main" target="_blank">→ 访问*我们* ←</a>
+                    </div>
+                    <p style="text-align: center;color: #aaaaaabb;font-size: 70%;background-color: #ffffff80;padding: 0.8rem;">Tip : 遇到展示不全的文本，左右滑动试试呢♪</p>
+                    <p style="text-align: center;color: #aaaaaabb;font-size: 70%;background-color: #ffffff80;padding: 0.8rem;">Tip : 左上角若有个“三”，是可以展开目录的哦♪</p>
+                    <p style="text-align: center;color: #aaaaaabb;font-size: 70%;background-color: #ffffff80;padding: 0.8rem;">Notice: 存在不兼容现象。建议使用浏览器查看。</p>
+                </div>
+                
+                <!-- 系统设置 -->
+                <div id="settings" class="content-section">
+                    <h2>系统设置</h2>
+                    <p>在这里可以配置系统的各项参数和偏好设置。</p>
+                    <p>然而并没有可以配置的东西。</p>
+                </div>
+                
+                <!-- 通知中心 -->
+                <div id="notifications" class="content-section">
+                    <h2>通知中心</h2>
+                    <h4>From : 三之意志守护者 2024/04/21 21:07</h4>
+                    <p>周一体育课开会</p>
+                    <p>1 不来者罚俸禄一月</p>
+                    <p>2 打断教皇说话者惩罚同上</p>
+                    <p>3 欲升职成员需自备发言内容，后由高层决定升官</p>
+                    <p>4 蒋教主不加工资，不发工资，权力与教皇无二</p>
+                    <p> ---End </p>
+                </div>
+                
+                <!-- 帮助中心 -->
+                <div id="help" class="content-section">
+                    <h2>帮助中心</h2>
+                    <p> ↓ 这里提供使用指南、常见问题解答和教程。</p>
+                    <div class="visit-card">
+                      <a href="https://ys.mihoyo.com/main/" target="_blank" style="color: #000000;">使用教程</a>
+                    </div>
+                </div>
+                
+                <!-- 关于我们 -->
+                <div id="about" class="content-section">
+                    <h2>关于我们</h2>
+                    <p>真的扣扣群 : 92*****76</p>
+                    <p> </p>
+                    <p>真的密文(Tip:Based Base64) : SlJYX0lTX1NC </p>
+                    <p> </p>
+                    <p>真的密文(Tip:Based URL) : %E8%92%8B%E4%BB%81%E7%86%99%E6%98%AF%E6%B2%99%E5%B8%81</p>
+                </div>
+                
+                <!-- 替换原有的"联系群主"部分内容 -->
+                <div id="contact" class="content-section">
+                    <h2>联系群主</h2>
+                    <div class="contact-table-container">
+                        <div class="table-header">
+                            <h3 class="table-title">热门产品</h3>
+                        </div>
+                        <div class="table-wrapper">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>产品</th>
+                                        <th>价格</th>
+                                        <th>销量</th>
+                                        <th>库存</th>
+                                        <th>状态</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>
+                                            <div class="product-info">
+                                                <div class="product-placeholder"></div>
+                                                <span>蒋仁熙</span>
+                                            </div>
+                                        </td>
+                                        <td>¥6</td>
+                                        <td>Unknown</td>
+                                        <td>1</td>
+                                        <td>
+                                            <span class="status-badge">在售</span>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <div class="product-info">
+                                                <div class="product-placeholder"></div>
+                                                <span>袁文涛</span>
+                                            </div>
+                                        </td>
+                                        <td>$1</td>
+                                        <td>Unknown</td>
+                                        <td>1</td>
+                                        <td>
+                                            <span class="status-badge">在售</span>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+              
+            </div>
+        
+    </main>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // 元素获取
+            const toggleBtn = document.getElementById('toggle-sidebar');
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebar-overlay');
+            const navLinks = document.querySelectorAll('.nav-link');
+            const contentSections = document.querySelectorAll('.content-section');
+            
+            // 侧边栏切换
+            function toggleSidebar() {
+                sidebar.classList.toggle('open');
+                overlay.classList.toggle('show');
+                document.body.classList.toggle('overflow-hidden');
+            }
+            
+            toggleBtn.addEventListener('click', toggleSidebar);
+            overlay.addEventListener('click', toggleSidebar);
+            
+            // 导航链接点击事件
+            navLinks.forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    
+                    // 获取目标内容ID
+                    const targetId = this.getAttribute('data-target');
+                    
+                    // 更新导航链接活跃状态
+                    navLinks.forEach(l => l.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    // 显示对应的内容区域，隐藏其他区域
+                    contentSections.forEach(section => {
+                        section.classList.remove('active');
+                        if (section.id === targetId) {
+                            section.classList.add('active');
+                        }
+                    });
+                    
+                    // 在移动设备上点击后关闭侧边栏
+                    if (window.innerWidth < 1024) {
+                        toggleSidebar();
+                    }
+                });
+            });
+            
+            // 窗口大小变化时调整侧边栏状态
+            window.addEventListener('resize', function() {
+                if (window.innerWidth >= 1024) {
+                    sidebar.classList.add('open');
+                    overlay.classList.remove('show');
+                } else {
+                    sidebar.classList.remove('open');
+                }
+            });
+        });
+    </script>
+  
+    <script>
+        // 自动更新日期
+        function updateDate() {
+            const now = new Date();
+            const year = now.getFullYear();
+            const month = now.getMonth() + 1;
+            const day = now.getDate();
+            const weekdays = ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六'];
+            const weekday = weekdays[now.getDay()];
+            
+            document.getElementById('current-date').textContent = `${year}年${month}月${day}日`;
+            document.getElementById('current-weekday').textContent = weekday;
+        }
+        
+        // 页面加载时更新日期
+        updateDate();
+    </script>
+    <footer class="page-footer">声明：仅供娱乐</footer>
+    </body></html>
