@@ -1,11 +1,208 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>My GitHub Web [for test]</title>
+    <meta charset="UTF-8">
+    <!-- 视口设置：确保在移动设备上正确缩放，width=device-width匹配设备宽度，initial-scale=1.0初始缩放比例为1 -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My GitHub Pages</title>
+    <style>
+        /* 基础样式重置：清除所有元素默认的内外边距，使用border-box盒模型让宽高计算更直观 */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        /* 页面主体样式：浅灰色背景，深灰色文字，行高1.6提高可读性 */
+        body {
+            background-color: #f5f5f5;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        /* 容器样式：限制最大宽度1200px，居中显示，添加内边距 */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* 头部样式：居中对齐，上下内边距营造空间感 */
+        header {
+            text-align: center;
+            padding: 60px 0 40px;
+        }
+
+        header h1 {
+            font-size: 2.5rem; /* 使用rem单位实现响应式字体大小 */
+            margin-bottom: 15px;
+            color: #2c3e50; /* 深蓝色标题，增强视觉层次 */
+        }
+
+        header p {
+            font-size: 1.1rem;
+            color: #666; /* 灰色描述文字，不抢眼但清晰 */
+            max-width: 700px; /* 限制最大宽度，避免文字过长影响阅读 */
+            margin: 0 auto;
+        }
+
+        /* 链接块容器：使用grid布局，自动适应屏幕宽度 */
+        .links-container {
+            display: grid;
+            /* 自动计算列数，每列最小300px，最大占满剩余空间 */
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px; /* 卡片之间的间距 */
+            margin-bottom: 60px; /* 底部留白 */
+        }
+
+        /* 链接块样式：白色背景，圆角，阴影，悬停动画 */
+        .link-card {
+            background-color: white;
+            border-radius: 10px; /* 圆角边框，柔和视觉效果 */
+            padding: 30px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08); /* 轻微阴影，增强立体感 */
+            /* 过渡动画：变换和阴影变化在0.3秒内完成，平滑效果 */
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            text-align: center; /* 内容居中对齐 */
+        }
+
+        .show-logo {
+            object-fit: cover;
+            width: 10rem;
+            height: auto;
+        }
+
+        /* 卡片悬停效果：上浮5px，阴影加深，增强交互感 */
+        .link-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+        }
+
+        /* 图标样式：大号图标，底部留白，主题色 */
+        .link-card i {
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+            color: #3498db;
+        }
+
+        .link-card h2 {
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+            color: #2c3e50;
+        }
+
+        .link-card p {
+            color: #666;
+            margin-bottom: 25px;
+        }
+
+        /* 链接按钮样式：蓝色背景，白色文字，圆角，悬停变色 */
+        .link-card a {
+            display: inline-block; /* 让链接可以设置宽高和内外边距 */
+            background-color: #3498db;
+            color: white;
+            text-decoration: none; /* 去除下划线 */
+            padding: 10px 20px;
+            border-radius: 5px;
+            font-weight: 500;
+            transition: background-color 0.3s ease; /* 背景色过渡动画 */
+        }
+
+        .link-card a:hover {
+            background-color: #2980b9; /* 深一点的蓝色，反馈悬停状态 */
+        }
+
+        /* 不同链接块的颜色区分：通过额外类名自定义每个卡片的主题色 */
+        .link-card.Sanjiaohui i,
+        .link-card.Sanjiaohui a {
+            background-color: #2ecc71; /* 项目卡片：绿色 */
+        }
+
+        .link-card.Sanjiaohui a:hover {
+            background-color: #27ae60;
+        }
+
+        .link-card.future i,
+        .link-card.future a {
+            background-color: #e67e22; /* 卡片：橙色 */
+        }
+
+        .link-card.future a:hover {
+            background-color: #d35400;
+        }
+
+        .link-card.ZRAI i,
+        .link-card.ZRAI a {
+            background-color: #ff6680;
+        }
+
+        .link-card.ZRAI a:hover {
+            background-color: #c34e62;
+        }
+
+        /* 页脚样式：居中对齐，浅色边框，小字号 */
+        footer {
+            text-align: center;
+            color: #666;
+            font-size: 0.9rem;
+            border-top: 1px solid #e0e0e0; /* 顶部边框分隔内容和页脚 */
+            position: fixed; /* 固定定位，不受页面滚动影响 */
+            bottom: 0; /* 距离底部0距离 */
+            left: 0;
+            right: 0; /* 左右拉伸至全屏 */
+            padding: 0.5rem 0.5rem;
+        }
+
+        /* 响应式调整：屏幕宽度小于768px时的样式 */
+        @media (max-width: 768px) {
+            header h1 {
+                font-size: 2rem; /* 缩小标题字体 */
+            }
+
+            .links-container {
+                grid-template-columns: 1fr; /* 单列布局，适应手机屏幕 */
+            }
+        }
+    </style>
+
 </head>
 <body>
-    <h1>Hello, GitHub Pages!</h1>
-    <a href="三教会V1.html" style="color: blue; font-size: 100%; background-color: #d99e8277">三教会宫网</a>
-</body>
+    <div class="container">
+        <!-- 页面头部：网站标题和简介 -->
+        <header>
+            <h1>Welcome to My GitHub Pages</h1>
+            <p>声明：用于测试HTML</p>
+        </header>
 
+        <!-- 链接卡片容器：包含所有跳转链接的卡片 -->
+        <div class="links-container">
+            <!-- 项目链接块：跳转到GitHub仓库页面 -->
+            <div class="link-card Sanjiaohui">
+                <img class="show-logo" src="picture/logo-sanjiaohui.jpg">
+                <h2>三教会</h2>
+                <p>访问三教会宫网</p>
+                <a href="三教会V1.html">Visit ♪</a>
+            </div>
+
+            <div class="link-card ZRAI">
+                <img class="show-logo" src="picture/logo-sanjiaohui.jpg">
+                <h2>芷入AI</h2>
+                <p>试用芷入AI</p>
+                <a href="芷入大模型TLE-1.1.html">Visit ♪</a>
+            </div>
+
+            <div class="link-card future">
+                <img class="show-logo" src="picture/HuTao.jpg">
+                <h2>敬请期待</h2>
+                <p>hh</p>
+            </div>
+
+
+        <!-- 页脚：版权信息 -->
+        <footer>
+            <p>翻开故事的下一页吧♪</p>
+        </footer>
+    </div>
+</body>
 </html>
