@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>???测定器</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "Microsoft YaHei", sans-serif;
+        }
+
+        body {
+            min-height: 100vh;
+            background-color: #f5f5f5;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: flex-start;
+            padding: 2vw;
+            gap: 2vw;
+            padding-top: 4vw;
+            position: relative; /* 为底部关于按钮定位做准备 */
+            padding-bottom: 10vw; /* 给底部关于按钮预留空间 */
+        }
+
+        /* 核心容器 - 响应式 */
+        .container {
+
+            width: 100%;
+            max-width: 500px;
+            background: white;
+            padding: 4vw;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        /* 算法选择容器 */
+        .algorithm-container {
+            width: 100%;
+            max-width: 300px;
+            background: white;
+            padding: 4vw;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            align-self: center;
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 3vw;
+            font-size: 5vw;
+        }
+
+        h2 {
+            color: #333;
+            margin-bottom: 3vw;
+            font-size: 4vw;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 2vw;
+        }
+
+        /* 文本输入框 */
+        #textInput {
+            width: 100%;
+            height: 200px;
+            padding: 2vw;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            resize: none;
+            font-size: 3.5vw;
+            margin-bottom: 3vw;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        #textInput:focus {
+            border-color: #409eff;
+        }
+
+        /* 按钮样式 */
+        #calculateBtn {
+            width: 100%;
+            padding: 2.5vw;
+            background-color: #409eff;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 4vw;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        #calculateBtn:hover {
+            background-color: #337ecc;
+        }
+
+        #calculateBtn:disabled {
+            background-color: #b3d4fc;
+            cursor: not-allowed;
+        }
+
+        /* 分数展示区域 - 霸气样式 */
+        #scoreResult {
+            margin-top: 4vw;
+            text-align: center;
+            min-height: 12vw;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* 分数核心展示 */
+        .score-display {
+            font-size: 9vw;
+            color: #409eff;
+            font-weight: 900;
+            text-shadow: 0 2px 8px rgba(64, 158, 255, 0.3);
+            animation: scorePop 0.6s ease-out;
+            position: relative;
+            padding: 1vw 3vw;
+            border-radius: 10px;
+            background: linear-gradient(120deg, #f0f7ff 0%, #e6f7ff 100%);
+        }
+
+        /* 分数单位 */
+        .score-unit {
+            font-size: 4vw;
+            color: #666;
+            font-weight: bold;
+            margin-top: 1vw;
+        }
+
+        /* 加载提示 */
+        .loading {
+            color: #999;
+            font-size: 3.5vw;
+        }
+
+        /* 提示文本样式 */
+        .tip-text {
+            font-size: 4vw;
+            color: #e6a23c;
+            font-weight: bold;
+        }
+
+        /* 分数弹出动画 */
+        @keyframes scorePop {
+            0% {
+                transform: scale(0.8);
+                opacity: 0;
+            }
+            70% {
+                transform: scale(1.1);
+                opacity: 1;
+            }
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        /* 算法选项样式 */
+        .algorithm-option {
+            margin-bottom: 2vw;
+        }
+
+        .algorithm-option label {
+            display: flex;
+            align-items: center;
+            gap: 1.5vw;
+            cursor: pointer;
+            font-size: 3.5vw;
+            color: #555;
+            padding: 1.5vw;
+            border-radius: 6px;
+            transition: background-color 0.2s;
+        }
+
+        .algorithm-option label:hover {
+            background-color: #f0f7ff;
+        }
+
+        .algorithm-option input[type="radio"] {
+            width: 4vw;
+            height: 4vw;
+            accent-color: #409eff;
+        }
+
+        /* 新增：关于按钮样式 */
+        .about-btn {
+            position: fixed;
+            bottom: 3vw;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 2vw 4vw;
+            background-color: #666;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 3.5vw;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            z-index: 999;
+        }
+
+        .about-btn:hover {
+            background-color: #444;
+        }
+
+        /* 新增：弹窗样式 */
+        .modal {
+            display: none; /* 默认隐藏 */
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background-color: white;
+            padding: 5vw;
+            border-radius: 12px;
+            text-align: center;
+            min-width: 60%;
+            max-width: 300px;
+            box-shadow: 0 4px 20px rgba(255, 0, 0, 0.2);
+            animation: modalPop 0.18s ease-out;
+        }
+
+        .modal-text {
+            font-size: 3.5vw;
+            color: #333;
+            margin-bottom: 3vw;
+        }
+
+        .modal-close {
+            padding: 1.5vw 3vw;
+            background-color: #409eff;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 3.5vw;
+            cursor: pointer;
+        }
+
+        @keyframes modalPop {
+            0% {
+                transform: scale(0.8);
+                opacity: 0;
+            }
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        /* 适配大屏（平板/电脑） */
+        @media (min-width: 768px) {
+            body {
+                align-items: center;
+                padding: 20px;
+                gap: 20px;
+                padding-bottom: 80px;
+            }
+
+            .container {
+                max-width: 500px;
+                padding: 25px;
+            }
+
+            .algorithm-container {
+                max-width: 300px;
+                padding: 25px;
+            }
+
+            h1 {
+                font-size: 28px;
+                margin-bottom: 20px;
+            }
+
+            h2 {
+                font-size: 20px;
+                margin-bottom: 20px;
+                padding-bottom: 10px;
+            }
+
+            #textInput {
+                text-align: center;
+                font-size: 20px;
+                padding: 15px;
+                margin-bottom: 20px;
+                height: 250px;
+            }
+
+            #calculateBtn {
+                font-size: 20px;
+                padding: 12px;
+            }
+
+            /* 大屏霸气分数样式 */
+            #scoreResult {
+                min-height: 80px;
+            }
+            
+            .score-display {
+                font-size: 72px;
+                padding: 5px 20px;
+            }
+            
+            .score-unit {
+                font-size: 24px;
+                margin-top: 5px;
+            }
+
+            .loading {
+                font-size: 16px;
+            }
+
+            .tip-text {
+                font-size: 20px;
+            }
+
+            .algorithm-option {
+                margin-bottom: 10px;
+            }
+
+            .algorithm-option label {
+                font-size: 16px;
+                gap: 8px;
+                padding: 8px;
+            }
+
+            .algorithm-option input[type="radio"] {
+                width: 18px;
+                height: 18px;
+            }
+
+            /* 大屏：关于按钮样式 */
+            .about-btn {
+                bottom: 20px;
+                padding: 10px 20px;
+                font-size: 16px;
+                border-radius: 6px;
+            }
+
+            .modal-content {
+                padding: 25px;
+                max-width: 300px;
+            }
+
+            .modal-text {
+                font-size: 24px;
+                margin-bottom: 15px;
+            }
+
+            .modal-close {
+                padding: 8px 15px;
+                font-size: 16px;
+            }
+        }
+
+        /* 大屏横向布局，小屏纵向布局 */
+        @media (min-width: 992px) {
+            body {
+                flex-wrap: nowrap;
+                justify-content: center;
+                align-items: center;
+            }
+            
+            .container {
+                width: 60%;
+            }
+            
+            .algorithm-container {
+                width: 30%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 style="color: #f00000aa">傻逼程度测定器</h1>
+        <p style="color: #00000080;text-align: center;">分数越高越傻逼</p>
+        <p style="color: #00000080;text-align: center;font-size: 80%;padding-bottom: 2px;">仅供娱乐！</p>
+        <textarea id="textInput" placeholder="请输入文本... （可以是名字、词语等等）"></textarea>
+        <button id="calculateBtn">测定分数</button>
+        <p style="color: #00000070;text-align: center; font-size: 60%;padding-top: 6px;">分数计算是固定算法，随机性无法预测，可自行查看源码</p>
+        <p style="color: #00000070;text-align: center; font-size: 60%;">此为静态网页，输入的内容不会被保存</p>
+        <div id="scoreResult"></div>
+    </div>
+
+    <div class="algorithm-container">
+        <h2>选择计算方法</h2>
+        <div class="algorithm-option">
+            <label>
+                <input type="radio" name="algorithm" value="method1" checked>
+                线路1：SHA-256前10位取模
+            </label>
+        </div>
+        <div class="algorithm-option">
+            <label>
+                <input type="radio" name="algorithm" value="method2">
+                线路2：SHA-256后10位取模
+            </label>
+        </div>
+        <div class="algorithm-option">
+            <label>
+                <input type="radio" name="algorithm" value="method3">
+                线路3：字符长度加权哈希
+            </label>
+        </div>
+        <!-- 添加到algorithm-container容器末尾 -->
+        <div style="margin-top: 3vw;">
+            <label style="font-size: 2.5vh; color: #555;">自定义盐值：</label>
+            <input type="text" id="saltInput" placeholder="yyzYYZyyz" style="width: 100%; padding: 1.5hw; margin-top: 1vw; border: 1px solid #ddd; border-radius: 6px; font-size: 2vh;">
+        </div>
+    </div>
+
+    <!-- 新增：关于按钮 -->
+    <button class="about-btn" id="aboutBtn">关于</button>
+
+    <!-- 新增：弹窗容器 -->
+    <div class="modal" id="aboutModal">
+        <div class="modal-content">
+            <div class="modal-text">分数仅代表哈希值的随机结果，仅供娱乐，不代表任何立场！</div>
+            <button class="modal-close" id="modalCloseBtn">关闭</button>
+        </div>
+    </div>
+
+    <script>
+        // 获取DOM元素
+        const textInput = document.getElementById('textInput');
+        const calculateBtn = document.getElementById('calculateBtn');
+        const scoreResult = document.getElementById('scoreResult');
+        const algorithmRadios = document.querySelectorAll('input[name="algorithm"]');
+        // 新增：关于相关DOM元素
+        const aboutBtn = document.getElementById('aboutBtn');
+        const aboutModal = document.getElementById('aboutModal');
+        const modalCloseBtn = document.getElementById('modalCloseBtn');
+
+        // 定义加盐的key（盐值），方便后续修改
+        const HASH_SALT = 'yyzYYZyyz';
+
+        // 工具函数：生成带盐的SHA-256哈希
+        async function generateSHA256Hash(text) {
+            const saltInput = document.getElementById('saltInput');
+            const salt = saltInput.value.trim() || HASH_SALT; // 优先用用户输入
+            const textWithSalt = text + salt;
+            // 加盐处理：文本 + 盐值 拼接后再计算哈希
+            const encoder = new TextEncoder();
+            const data = encoder.encode(textWithSalt);
+            const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+            const hashArray = Array.from(new Uint8Array(hashBuffer));
+            return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+        }
+
+        // 获取当前选中的算法
+        function getSelectedAlgorithm() {
+            for (const radio of algorithmRadios) {
+                if (radio.checked) {
+                    return radio.value;
+                }
+            }
+            return 'method1'; // 默认方法1
+        }
+
+        // 三种分数计算方法
+        async function calculateScoreByMethod(text, method) {
+            let score = 0;
+            
+            switch (method) {
+                case 'method1':
+                    // 方法1：SHA-256前10位取模101（0-100）
+                    const hash1 = await generateSHA256Hash(text);
+                    const slice1 = hash1.slice(0, 10);
+                    score = parseInt(slice1, 16) % 101;
+                    break;
+
+                case 'method2':
+                    // 方法2：SHA-256后10位取模101
+                    const hash2 = await generateSHA256Hash(text);
+                    const slice2 = hash2.slice(-10);
+                    score = parseInt(slice2, 16) % 101;
+                    break;
+
+                case 'method3':
+                    // 方法3：字符长度加权哈希
+                    const hash3 = await generateSHA256Hash(text);
+                    const slice3 = hash3.slice(5, 15);
+                    const baseNum = parseInt(slice3, 16);
+                    // 结合文本长度加权
+                    const lengthWeight = Math.min(text.length / 100, 1); // 长度权重0-1
+                    score = Math.floor((baseNum % 1000) * lengthWeight / 10);
+                    // 确保分数在0-100之间
+                    score = Math.max(0, Math.min(100, score));
+                    break;
+            }
+            
+            return score;
+        }
+
+        // 核心计算逻辑
+        async function calculateScore() {
+            const text = textInput.value.trim();
+            if (!text) {
+                scoreResult.innerHTML = '<span class="tip-text">请输入文本内容！</span>';
+                return; 
+            }
+
+            // 加载状态
+            calculateBtn.disabled = true;
+            scoreResult.innerHTML = '<span class="loading">正在测定...</span>';
+
+            try {
+                // 获取选中的算法并计算分数
+                const selectedMethod = getSelectedAlgorithm();
+                const score = await calculateScoreByMethod(text, selectedMethod);
+
+                // 计算分数颜色（0-100，绿→红渐变）
+                const getScoreColor = (score) => {
+                    // 0分：绿色(#00cc00)，100分：红色(#ff0000)，中间线性渐变
+                    const r = Math.floor(255 * (score / 100));
+                    const g = Math.floor(255 * ((100 - score) / 100));
+                    const b = 0;
+                    return `rgb(${r}, ${g}, ${b})`;
+                };
+                const scoreColor = getScoreColor(score);
+
+                // 100分弹窗逻辑
+                if (score === 100) {
+                    setTimeout(() => {
+                        alert('恭喜发财'); 
+                    }, 500); // 延迟弹出，等分数动画完成
+                } else if(score === 78) {
+                    setTimeout(() => {
+                        alert('细节78'); 
+                    }, 500);
+                }else if(score === 91) {
+                    setTimeout(() => {
+                        alert('细节91'); 
+                    }, 500);
+                }else if(score === 13) {
+                    setTimeout(() => {
+                        alert('细节13'); 
+                    }, 500);
+                }
+
+                // 霸气展示分数
+                scoreResult.innerHTML = `
+                    <span class="score-display" style="color: ${scoreColor};">${score}</span>
+                    <span class="score-unit">/ 100</span>
+                `;
+
+
+            } catch (error) {
+                scoreResult.innerHTML = '<span class="tip-text" style="color: #f56c6c;">测定失败，请重试！</span>';
+                console.error('计算失败：', error);
+            } finally {
+                // 恢复按钮状态
+                calculateBtn.disabled = false;
+            }
+        }
+
+        // 新增：关于弹窗逻辑
+        function openAboutModal() {
+            aboutModal.style.display = 'flex';
+        }
+
+        function closeAboutModal() {
+            aboutModal.style.display = 'none';
+        }
+
+        // 绑定事件
+        calculateBtn.addEventListener('click', calculateScore);
+        // 新增：绑定关于按钮事件
+        aboutBtn.addEventListener('click', openAboutModal);
+        modalCloseBtn.addEventListener('click', closeAboutModal);
+        // 点击弹窗外部关闭弹窗
+        aboutModal.addEventListener('click', (e) => {
+            if (e.target === aboutModal) {
+                closeAboutModal();
+            }
+        });
+        
+        // 切换算法后自动重新计算
+        algorithmRadios.forEach(radio => {
+            radio.addEventListener('change', () => {
+                const text = textInput.value.trim();
+                if (text) {
+                    calculateScore();
+                }
+            });
+        });
+
+        // 回车触发计算
+        textInput.addEventListener('keydown', (e) => {
+            if (e.ctrlKey && e.key === 'Enter') {
+                calculateScore();
+            }
+        });
+    </script>
+</body>
+</html>
